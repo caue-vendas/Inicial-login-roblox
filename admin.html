@@ -5,6 +5,7 @@
     <meta charset="UTF-8">
     <title>Painel de Administração</title>
     <style>
+        /* Estilos similares ao Roblox */
         body {
             font-family: Arial, sans-serif;
             background-color: #f0f0f0;
@@ -19,19 +20,6 @@
             padding: 20px;
             border-radius: 5px;
             box-shadow: 0 0 10px rgba(0,0,0,0.1);
-        }
-        input[type="text"], input[type="password"] {
-            width: 100%;
-            padding: 10px;
-            margin: 10px 0;
-            box-sizing: border-box;
-        }
-        button {
-            padding: 10px 15px;
-            background-color: #4CAF50;
-            color: white;
-            border: none;
-            cursor: pointer;
         }
         table {
             width: 100%;
@@ -63,60 +51,75 @@
         <h2>Painel de Administração</h2>
         <table id="userTable">
             <tr>
+                <th>ID</th>
                 <th>Usuário</th>
-                <th>Senha</th>
-                <th>Horário de Login</th>
                 <th>Email</th>
-                <th>Número</th>
+                <th>Criado em</th>
+                <th>Último Login</th>
             </tr>
-            <!-- Dados dos usuários serão adicionados aqui dinamicamente -->
         </table>
     </div>
 
     <script>
-        // Credenciais de administrador (em produção, use hash e salting)
-        const ADMIN_CREDENTIALS = {
-            username: "admin",
-            password: "senha123"
-        };
-
-        // Simulando dados de usuários
-        const usuarios = [
-            { usuario: "admin", senha: "senha123", horario: "10:00 AM", email: "admin@example.com", numero: "1234567890" },
-            { usuario: "user1", senha: "user123", horario: "11:00 AM", email: "user1@example.com", numero: "0987654321" }
-        ];
-
         // Função de autenticação
-        function authenticateAdmin(username, password) {
-            return username === ADMIN_CREDENTIALS.username && password === ADMIN_CREDENTIALS.password;
+        async function authenticateAdmin(username, password) {
+            try {
+                const response = await fetch('/api/login', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({username, password})
+                });
+                
+                const data = await response.json();
+                if(data.success) {
+                    localStorage.setItem('token', data.user.id);
+                    return true;
+                }
+                return false;
+            } catch(error) {
+                console.error('Erro:', error);
+                return false;
+            }
         }
 
         // Exibir painel de admin após autenticação bem-sucedida
-        function showAdminPanel() {
+        async function showAdminPanel() {
             document.getElementById('authContainer').style.display = 'none';
             document.getElementById('adminPanel').style.display = 'block';
 
-            // Adicionar dados ao painel de administração
-            usuarios.forEach(usuario => {
-                const row = document.createElement('tr');
-                row.innerHTML = `
-                    <td>${usuario.usuario}</td>
-                    <td>${usuario.senha}</td>
-                    <td>${usuario.horario}</td>
-                    <td>${usuario.email}</td>
-                    <td>${usuario.numero}</td>
-                `;
-                document.getElementById('userTable').appendChild(row);
-            });
+            try {
+                const response = await fetch('/api/users', {
+                    headers: {'Authorization': `Bearer ${localStorage.getItem('token')}`}
+                });
+                
+                const data = await response.json();
+                if(data.success) {
+                    data.users.forEach(user => {
+                        const row = document.createElement('tr');
+                        row.innerHTML = `
+                            <td>${user.id}</td>
+                            <td>${user.username}</td>
+                            <td>${user.email}</td>
+                            <td>${new Date(user.created_at).toLocaleString()}</td>
+                            <td>${user.last_login ? new Date(user.last_login).toLocaleString() : '-'}</td>
+                        `;
+                        document.getElementById('userTable').appendChild(row);
+                    });
+                } else {
+                    alert('Falha ao carregar dados de usuários!');
+                }
+            } catch(error) {
+                console.error('Erro:', error);
+            }
         }
 
         // Evento de submissão do formulário de login
-        document.getElementById('adminLoginForm').addEventListener('submit', function(e) {
+        document.getElementById('adminLoginForm').addEventListener('submit', async function(e) {
             e.preventDefault();
             const username = document.getElementById('adminUser').value;
             const password = document.getElementById('adminPass').value;
 
-            if(authenticateAdmin(username, password)) {
+            if(await authenticateAdmin(username, password)) {
                 showAdminPanel();
             } else {
                 alert("Credenciais inválidas!");
