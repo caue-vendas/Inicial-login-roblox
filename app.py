@@ -1,5 +1,5 @@
 # app.py
-from flask import Flask, request, jsonify, session
+from flask import Flask, request, jsonify, session, send_from_directory
 from flask_sqlalchemy import SQLAlchemy
 from werkzeug.security import generate_password_hash, check_password_hash
 import datetime
@@ -37,10 +37,15 @@ with app.app_context():
         db.session.add(admin)
         db.session.commit()
 
+# Rota principal (Abre a tela inicial)
+@app.route('/')
+def home():
+    return send_from_directory('.', 'login.html')
+
 # Rota de login
 @app.route('/api/login', methods=['POST'])
 def login():
-    data = request.get_json()
+    data = request.get_json() or request.form
     username = data.get('username')
     password = data.get('password')
     
@@ -84,6 +89,11 @@ def get_users():
 def logout():
     session.clear()
     return jsonify({'success': True, 'message': 'Logout realizado com sucesso!'})
+
+# Servir outros arquivos estáticos (como resgate.html, admin.html, etc.)
+@app.route('/<path:filename>')
+def serve_static(filename):
+    return send_from_directory('.', filename)
 
 if __name__ == '__main__':
     app.run(debug=True)
