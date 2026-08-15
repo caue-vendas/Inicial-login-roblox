@@ -96,4 +96,3 @@ def serve_static(filename):
     return send_from_directory('.', filename)
 
 if __name__ == '__main__':
-    app.run(debug=True)
