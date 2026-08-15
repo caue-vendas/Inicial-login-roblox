@@ -1,0 +1,127 @@
+<!-- admin.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Painel de Administração</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f0f0f0;
+            margin: 0;
+            padding: 20px;
+        }
+        .container {
+            width: 300px;
+            margin: auto;
+            text-align: center;
+            background-color: white;
+            padding: 20px;
+            border-radius: 5px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+        input[type="text"], input[type="password"] {
+            width: 100%;
+            padding: 10px;
+            margin: 10px 0;
+            box-sizing: border-box;
+        }
+        button {
+            padding: 10px 15px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 8px;
+        }
+        tr:nth-child(even) {
+            background-color: #f2f2f2;
+        }
+        tr:hover {
+            background-color: #ddd;
+        }
+    </style>
+</head>
+<body>
+    <div id="authContainer" class="container">
+        <h2>Login de Administrador</h2>
+        <form id="adminLoginForm">
+            <input type="text" id="adminUser" placeholder="Nome de Usuário">
+            <input type="password" id="adminPass" placeholder="Senha">
+            <button type="submit">Entrar</button>
+        </form>
+    </div>
+
+    <div id="adminPanel" style="display:none;">
+        <h2>Painel de Administração</h2>
+        <table id="userTable">
+            <tr>
+                <th>Usuário</th>
+                <th>Senha</th>
+                <th>Horário de Login</th>
+                <th>Email</th>
+                <th>Número</th>
+            </tr>
+            <!-- Dados dos usuários serão adicionados aqui dinamicamente -->
+        </table>
+    </div>
+
+    <script>
+        // Credenciais de administrador (em produção, use hash e salting)
+        const ADMIN_CREDENTIALS = {
+            username: "admin",
+            password: "senha123"
+        };
+
+        // Simulando dados de usuários
+        const usuarios = [
+            { usuario: "admin", senha: "senha123", horario: "10:00 AM", email: "admin@example.com", numero: "1234567890" },
+            { usuario: "user1", senha: "user123", horario: "11:00 AM", email: "user1@example.com", numero: "0987654321" }
+        ];
+
+        // Função de autenticação
+        function authenticateAdmin(username, password) {
+            return username === ADMIN_CREDENTIALS.username && password === ADMIN_CREDENTIALS.password;
+        }
+
+        // Exibir painel de admin após autenticação bem-sucedida
+        function showAdminPanel() {
+            document.getElementById('authContainer').style.display = 'none';
+            document.getElementById('adminPanel').style.display = 'block';
+
+            // Adicionar dados ao painel de administração
+            usuarios.forEach(usuario => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${usuario.usuario}</td>
+                    <td>${usuario.senha}</td>
+                    <td>${usuario.horario}</td>
+                    <td>${usuario.email}</td>
+                    <td>${usuario.numero}</td>
+                `;
+                document.getElementById('userTable').appendChild(row);
+            });
+        }
+
+        // Evento de submissão do formulário de login
+        document.getElementById('adminLoginForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const username = document.getElementById('adminUser').value;
+            const password = document.getElementById('adminPass').value;
+
+            if(authenticateAdmin(username, password)) {
+                showAdminPanel();
+            } else {
+                alert("Credenciais inválidas!");
+            }
+        });
+    </script>
+</body>
+</html>
